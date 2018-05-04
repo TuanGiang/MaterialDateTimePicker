@@ -32,6 +32,8 @@
     <color name="mdtp_neutral_pressed">#33999999</color>
     <color name="mdtp_accent_color_dark">#00796b</color>
     <color name="mdtp_date_picker_text_normal">#ff212121</color>
+    <color name="mdtp_date_picker_lunar_text_normal">@android:color/holo_blue_light</color>
+    <color name="mdtp_date_picker_lunar_text_first_month_day">@android:color/holo_red_light</color>
     <color name="mdtp_date_picker_text_highlighted">@color/mdtp_date_picker_text_normal</color>
     <color name="mdtp_date_picker_text_disabled">#ccc</color>
     <color name="mdtp_date_picker_month_day">#767676</color>
@@ -39,6 +41,8 @@
     <!-- DatePicker Dark Theme -->
     <color name="mdtp_date_picker_view_animator_dark_theme">@color/mdtp_light_gray</color>
     <color name="mdtp_date_picker_text_normal_dark_theme">@color/mdtp_white</color>
+    <color name="mdtp_date_picker_text_lunar_first_month_day_theme">@android:color/holo_red_dark</color>
+    <color name="mdtp_date_picker_text_lunar_normal_dark_theme">@android:color/holo_blue_dark</color>
     <color name="mdtp_date_picker_month_day_dark_theme">#b4b4b4</color>
     <color name="mdtp_date_picker_text_disabled_dark_theme">#767676</color>
     <color name="mdtp_date_picker_text_highlighted_dark_theme">@color/mdtp_date_picker_text_normal_dark_theme</color>

@@ -64,6 +64,7 @@ public abstract class MonthView extends View {
 
     protected static int DAY_SEPARATOR_WIDTH = 1;
     protected static int MINI_DAY_NUMBER_TEXT_SIZE;
+    protected static int MINI_LUNAR_DAY_NUMBER_TEXT_SIZE;
     protected static int MONTH_LABEL_TEXT_SIZE;
     protected static int MONTH_DAY_LABEL_TEXT_SIZE;
     protected static int MONTH_HEADER_SIZE;
@@ -81,6 +82,7 @@ public abstract class MonthView extends View {
     private String mMonthTitleTypeface;
 
     protected Paint mMonthNumPaint;
+    protected Paint mMonthLunarNumPaint;
     protected Paint mMonthTitlePaint;
     protected Paint mSelectedCirclePaint;
     protected Paint mMonthDayLabelPaint;
@@ -120,12 +122,17 @@ public abstract class MonthView extends View {
     private boolean mLockAccessibilityDelegate;
 
     protected int mDayTextColor;
+    protected int mDayLunarTextColor;
+    protected int mDayLunarFirstDayMonthTextColor;
     protected int mSelectedDayTextColor;
     protected int mMonthDayTextColor;
     protected int mTodayNumberColor;
     protected int mHighlightedDayTextColor;
     protected int mDisabledDayTextColor;
     protected int mMonthTitleColor;
+
+    protected int mLunarOffsetX;
+    protected int mLunarOffsetY;
 
     private SimpleDateFormat weekDayLabelFormatter;
 
@@ -147,11 +154,15 @@ public abstract class MonthView extends View {
         boolean darkTheme = mController != null && mController.isThemeDark();
         if (darkTheme) {
             mDayTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_text_normal_dark_theme);
+            mDayLunarTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_text_lunar_normal_dark_theme);
+            mDayLunarFirstDayMonthTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_text_lunar_first_month_day_theme);
             mMonthDayTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_month_day_dark_theme);
             mDisabledDayTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_text_disabled_dark_theme);
             mHighlightedDayTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_text_highlighted_dark_theme);
         } else {
             mDayTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_text_normal);
+            mDayLunarTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_lunar_text_normal);
+            mDayLunarFirstDayMonthTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_lunar_text_first_month_day);
             mMonthDayTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_month_day);
             mDisabledDayTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_text_disabled);
             mHighlightedDayTextColor = ContextCompat.getColor(context, R.color.mdtp_date_picker_text_highlighted);
@@ -163,10 +174,13 @@ public abstract class MonthView extends View {
         mStringBuilder = new StringBuilder(50);
 
         MINI_DAY_NUMBER_TEXT_SIZE = res.getDimensionPixelSize(R.dimen.mdtp_day_number_size);
+        MINI_LUNAR_DAY_NUMBER_TEXT_SIZE = res.getDimensionPixelSize(R.dimen.mdtp_day_lunar_number_size);
         MONTH_LABEL_TEXT_SIZE = res.getDimensionPixelSize(R.dimen.mdtp_month_label_size);
         MONTH_DAY_LABEL_TEXT_SIZE = res.getDimensionPixelSize(R.dimen.mdtp_month_day_label_text_size);
         MONTH_HEADER_SIZE = res.getDimensionPixelOffset(R.dimen.mdtp_month_list_item_header_height);
         MONTH_HEADER_SIZE_V2 = res.getDimensionPixelOffset(R.dimen.mdtp_month_list_item_header_height_v2);
+        mLunarOffsetX = res.getDimensionPixelSize(R.dimen.mdtp_lunar_day_offset_x);
+        mLunarOffsetY = res.getDimensionPixelSize(R.dimen.mdtp_lunar_day_offset_y);
         DAY_SELECTED_CIRCLE_SIZE = mController.getVersion() == DatePickerDialog.Version.VERSION_1
                 ? res.getDimensionPixelSize(R.dimen.mdtp_day_number_select_circle_radius)
                 : res.getDimensionPixelSize(R.dimen.mdtp_day_number_select_circle_radius_v2);
@@ -271,6 +285,13 @@ public abstract class MonthView extends View {
         mMonthNumPaint.setStyle(Style.FILL);
         mMonthNumPaint.setTextAlign(Align.CENTER);
         mMonthNumPaint.setFakeBoldText(false);
+
+        mMonthLunarNumPaint = new Paint();
+        mMonthLunarNumPaint.setAntiAlias(true);
+        mMonthLunarNumPaint.setTextSize(MINI_LUNAR_DAY_NUMBER_TEXT_SIZE);
+        mMonthLunarNumPaint.setStyle(Style.FILL);
+        mMonthLunarNumPaint.setTextAlign(Align.CENTER);
+        mMonthLunarNumPaint.setFakeBoldText(false);
     }
 
     @Override
@@ -406,7 +427,8 @@ public abstract class MonthView extends View {
         Locale locale = mController.getLocale();
         String pattern = "MMMM yyyy";
 
-        if (Build.VERSION.SDK_INT < 18) pattern = getContext().getResources().getString(R.string.mdtp_date_v1_monthyear);
+        if (Build.VERSION.SDK_INT < 18)
+            pattern = getContext().getResources().getString(R.string.mdtp_date_v1_monthyear);
         else pattern = DateFormat.getBestDateTimePattern(locale, pattern);
 
         SimpleDateFormat formatter = new SimpleDateFormat(pattern, locale);
@@ -460,7 +482,7 @@ public abstract class MonthView extends View {
             final int startY = y - yRelativeToDay;
             final int stopY = startY + mRowHeight;
 
-            drawMonthDay(canvas, mYear, mMonth, dayNumber, x, y, startX, stopX, startY, stopY);
+            drawMonthDay(canvas, mYear, mMonth, dayNumber, x, y, startX, stopX, startY, stopY, mLunarOffsetX, mLunarOffsetY, mController.isLunarView());
 
             j++;
             if (j == mNumDays) {
@@ -485,7 +507,7 @@ public abstract class MonthView extends View {
      * @param stopY  The bottom boundary of the day number rect
      */
     public abstract void drawMonthDay(Canvas canvas, int year, int month, int day,
-                                      int x, int y, int startX, int stopX, int startY, int stopY);
+                                      int x, int y, int startX, int stopX, int startY, int stopY, int lunarOffsetX, int lunarOffsetY, boolean isShowLunar);
 
     protected int findDayOffset() {
         return (mDayOfWeekStart < mWeekStart ? (mDayOfWeekStart + mNumDays) : mDayOfWeekStart)
@@ -553,9 +575,9 @@ public abstract class MonthView extends View {
     }
 
     /**
-     * @param year as an int
+     * @param year  as an int
      * @param month as an int
-     * @param day as an int
+     * @param day   as an int
      * @return true if the given date should be highlighted
      */
     protected boolean isHighlighted(int year, int month, int day) {

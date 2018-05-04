@@ -18,8 +18,12 @@ package com.wdullaer.materialdatetimepicker.date;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+
+import com.wdullaer.materialdatetimepicker.lunar.Lunar;
+import com.wdullaer.materialdatetimepicker.lunar.LunarSolarConverter;
 
 public class SimpleMonthView extends MonthView {
 
@@ -29,7 +33,7 @@ public class SimpleMonthView extends MonthView {
 
     @Override
     public void drawMonthDay(Canvas canvas, int year, int month, int day,
-                             int x, int y, int startX, int stopX, int startY, int stopY) {
+                             int x, int y, int startX, int stopX, int startY, int stopY, int lunarOffsetX, int lunarOffsetY, boolean isShowLunar) {
         if (mSelectedDay == day) {
             canvas.drawCircle(x, y - (MINI_DAY_NUMBER_TEXT_SIZE / 3), DAY_SELECTED_CIRCLE_SIZE,
                     mSelectedCirclePaint);
@@ -54,7 +58,28 @@ public class SimpleMonthView extends MonthView {
         } else {
             mMonthNumPaint.setColor(isHighlighted(year, month, day) ? mHighlightedDayTextColor : mDayTextColor);
         }
+        String dayString = String.format(mController.getLocale(), "%d", day);
 
-        canvas.drawText(String.format(mController.getLocale(), "%d", day), x, y, mMonthNumPaint);
+        canvas.drawText(dayString, x, y, mMonthNumPaint);
+
+        if (isShowLunar) {
+            Lunar lunarDay = LunarSolarConverter.SolarToLunar(day, mMonth + 1, mYear);
+
+            String lunarDayString = String.valueOf(lunarDay.lunarDay);
+            if (lunarDay.lunarDay == 1) {
+                lunarDayString += "/" + String.valueOf(lunarDay.lunarMonth);
+                mMonthLunarNumPaint.setColor(mDayLunarFirstDayMonthTextColor);
+            } else {
+                mMonthLunarNumPaint.setColor(mDayLunarTextColor);
+            }
+            if (mSelectedDay == day) {
+                mMonthLunarNumPaint.setColor(mSelectedDayTextColor);
+            }
+
+            Rect bounds = new Rect();
+            mMonthNumPaint.getTextBounds(dayString, 0, dayString.length(), bounds);
+            int height = bounds.height();
+            canvas.drawText(lunarDayString, x + lunarOffsetX, y + height + lunarOffsetY, mMonthLunarNumPaint);
+        }
     }
 }

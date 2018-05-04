@@ -38,6 +38,8 @@ public interface DatePickerController {
 
     boolean isThemeDark();
 
+    boolean isLunarView();
+
     int getAccentColor();
     
     boolean isHighlighted(int year, int month, int day);

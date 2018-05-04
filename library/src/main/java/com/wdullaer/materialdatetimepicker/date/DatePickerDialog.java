@@ -103,6 +103,7 @@ public class DatePickerDialog extends DialogFragment implements
     private static final String KEY_DATERANGELIMITER = "daterangelimiter";
     private static final String KEY_SCROLL_ORIENTATION = "scrollorientation";
     private static final String KEY_LOCALE = "locale";
+    private static final String ENABLE_LUNAR_VIEW = "enablelunarview";
 
     private static final int ANIMATION_DURATION = 300;
     private static final int ANIMATION_DELAY = 500;
@@ -139,6 +140,7 @@ public class DatePickerDialog extends DialogFragment implements
     private boolean mVibrate = true;
     private boolean mDismissOnPause = false;
     private boolean mAutoDismiss = false;
+    private boolean mLunarView = false;
     private int mDefaultView = MONTH_AND_DAY_VIEW;
     private int mOkResid = R.string.mdtp_ok;
     private String mOkString;
@@ -292,6 +294,7 @@ public class DatePickerDialog extends DialogFragment implements
         outState.putSerializable(KEY_TIMEZONE, mTimezone);
         outState.putParcelable(KEY_DATERANGELIMITER, mDateRangeLimiter);
         outState.putSerializable(KEY_LOCALE, mLocale);
+        outState.putBoolean(ENABLE_LUNAR_VIEW, mLunarView);
     }
 
     @Override
@@ -329,7 +332,7 @@ public class DatePickerDialog extends DialogFragment implements
             mScrollOrientation = (ScrollOrientation) savedInstanceState.getSerializable(KEY_SCROLL_ORIENTATION);
             mTimezone = (TimeZone) savedInstanceState.getSerializable(KEY_TIMEZONE);
             mDateRangeLimiter = savedInstanceState.getParcelable(KEY_DATERANGELIMITER);
-
+            mLunarView = savedInstanceState.getBoolean(ENABLE_LUNAR_VIEW, false);
             /*
             We need to update some variables when setting the locale, so use the setter rather
             than a plain assignment
@@ -429,7 +432,8 @@ public class DatePickerDialog extends DialogFragment implements
         if (mAccentColor == -1) {
             mAccentColor = Utils.getAccentColorFromThemeIfAvailable(getActivity());
         }
-        if (mDatePickerHeaderView != null) mDatePickerHeaderView.setBackgroundColor(Utils.darkenColor(mAccentColor));
+        if (mDatePickerHeaderView != null)
+            mDatePickerHeaderView.setBackgroundColor(Utils.darkenColor(mAccentColor));
         view.findViewById(R.id.mdtp_day_picker_selected_date_layout).setBackgroundColor(mAccentColor);
 
         // Buttons can have a different color
@@ -614,6 +618,14 @@ public class DatePickerDialog extends DialogFragment implements
         mVibrate = vibrate;
     }
 
+
+    /**
+     * Set show/hide lunar view
+     */
+    public void showLunar(boolean isLunarView) {
+        mLunarView = isLunarView;
+    }
+
     /**
      * Set whether the picker should dismiss itself when being paused or whether it should try to survive an orientation change
      *
@@ -651,6 +663,11 @@ public class DatePickerDialog extends DialogFragment implements
     @Override
     public boolean isThemeDark() {
         return mThemeDark;
+    }
+
+    @Override
+    public boolean isLunarView() {
+        return mLunarView;
     }
 
     /**
@@ -874,6 +891,7 @@ public class DatePickerDialog extends DialogFragment implements
 
     /**
      * Provide a DateRangeLimiter for full control over which dates are enabled and disabled in the picker
+     *
      * @param dateRangeLimiter An implementation of the DateRangeLimiter interface
      */
     @SuppressWarnings("unused")
@@ -952,6 +970,7 @@ public class DatePickerDialog extends DialogFragment implements
 
     /**
      * Set which way the user needs to swipe to switch months in the MonthView
+     *
      * @param orientation The orientation to use
      */
     public void setScrollOrientation(ScrollOrientation orientation) {
@@ -960,6 +979,7 @@ public class DatePickerDialog extends DialogFragment implements
 
     /**
      * Get which way the user needs to swipe to switch months in the MonthView
+     *
      * @return SwipeOrientation
      */
     public ScrollOrientation getScrollOrientation() {
@@ -968,9 +988,10 @@ public class DatePickerDialog extends DialogFragment implements
 
     /**
      * Set which timezone the picker should use
-     *
+     * <p>
      * This has been deprecated in favor of setting the TimeZone using the constructor that
      * takes a Calendar object
+     *
      * @param timeZone The timezone to use
      */
     @SuppressWarnings("DeprecatedIsStillUsed")
@@ -985,6 +1006,7 @@ public class DatePickerDialog extends DialogFragment implements
 
     /**
      * Set a custom locale to be used when generating various strings in the picker
+     *
      * @param locale Locale
      */
     public void setLocale(Locale locale) {
@@ -997,6 +1019,7 @@ public class DatePickerDialog extends DialogFragment implements
 
     /**
      * Return the current locale (default or other)
+     *
      * @return Locale
      */
     @Override
@@ -1021,6 +1044,7 @@ public class DatePickerDialog extends DialogFragment implements
 
     /**
      * Get a reference to the callback
+     *
      * @return OnDateSetListener the callback
      */
     @SuppressWarnings("unused")
@@ -1129,7 +1153,8 @@ public class DatePickerDialog extends DialogFragment implements
         if (mVibrate) mHapticFeedbackController.tryVibrate();
     }
 
-    @Override public TimeZone getTimeZone() {
+    @Override
+    public TimeZone getTimeZone() {
         return mTimezone == null ? TimeZone.getDefault() : mTimezone;
     }
 

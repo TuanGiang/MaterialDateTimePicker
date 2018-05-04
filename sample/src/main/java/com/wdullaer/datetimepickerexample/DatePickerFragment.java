@@ -15,7 +15,6 @@ import android.widget.TextView;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.Calendar;
-import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,6 +32,7 @@ public class DatePickerFragment extends Fragment implements DatePickerDialog.OnD
     private CheckBox switchOrientation;
     private CheckBox limitSelectableDays;
     private CheckBox highlightDays;
+    private CheckBox showLunarView;
     private DatePickerDialog dpd;
 
     public DatePickerFragment() {
@@ -58,6 +58,7 @@ public class DatePickerFragment extends Fragment implements DatePickerDialog.OnD
         switchOrientation = view.findViewById(R.id.switch_orientation);
         limitSelectableDays = view.findViewById(R.id.limit_dates);
         highlightDays = view.findViewById(R.id.highlight_dates);
+        showLunarView = view.findViewById(R.id.show_version_lunar_view);
 
         view.findViewById(R.id.original_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,6 +105,7 @@ public class DatePickerFragment extends Fragment implements DatePickerDialog.OnD
                     );
                 }
                 dpd.setThemeDark(modeDarkDate.isChecked());
+                dpd.showLunar(showLunarView.isChecked());
                 dpd.vibrate(vibrateDate.isChecked());
                 dpd.dismissOnPause(dismissDate.isChecked());
                 dpd.showYearPickerFirst(showYearFirst.isChecked());
@@ -150,12 +152,12 @@ public class DatePickerFragment extends Fragment implements DatePickerDialog.OnD
     public void onResume() {
         super.onResume();
         DatePickerDialog dpd = (DatePickerDialog) getFragmentManager().findFragmentByTag("Datepickerdialog");
-        if(dpd != null) dpd.setOnDateSetListener(this);
+        if (dpd != null) dpd.setOnDateSetListener(this);
     }
 
     @Override
     public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-        String date = "You picked the following date: "+dayOfMonth+"/"+(++monthOfYear)+"/"+year;
+        String date = "You picked the following date: " + dayOfMonth + "/" + (++monthOfYear) + "/" + year;
         dateTextView.setText(date);
     }
 }
